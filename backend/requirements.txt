@@ -1,0 +1,7 @@
+pytest
+PyPDF2
+anthropic
+python-dotenv
+fastapi
+uvicorn
+python-multipart
