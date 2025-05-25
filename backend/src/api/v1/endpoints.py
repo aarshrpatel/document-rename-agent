@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from src.utils.file_utils import read_pdf
 from src.services.classifier import classify_document
 from src.services.llm_rename import suggest_filenames
@@ -10,7 +11,17 @@ import shutil
 
 load_dotenv()
 
-app = FastAPI()
+app = FastAPI();
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://effective-space-acorn-r4gwr7rq95gw35jww-3000.app.github.dev"],  # or ["*"] for all origins (not recommended for production)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 
 UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER")
 
