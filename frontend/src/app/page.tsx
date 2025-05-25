@@ -12,49 +12,58 @@ export default function Home() {
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault();
     if (!file) return;
-    setStatus("Uploading...");
-    const formData = new FormData();
-    formData.append("file", file);
- 
-    // Upload file
-    const res = await fetch("https://effective-space-acorn-r4gwr7rq95gw35jww-8000.app.github.dev/upload", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    setFilename(data.filename);
 
-    setStatus("Classifying...");
-    // Classify
-    const classifyRes = await fetch("https://effective-space-acorn-r4gwr7rq95gw35jww-8000.app.github.dev/classify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename: data.filename }),
-    });
-    const classifyData = await classifyRes.json();
-    setClassification(classifyData.classification);
+    try {
+      setStatus("Uploading...");
+      const formData = new FormData();
+      formData.append("file", file);
 
-    setStatus("Getting suggestions...");
-    // Get suggestions
-    const suggestRes = await fetch("https://effective-space-acorn-r4gwr7rq95gw35jww-8000.app.github.dev/suggest-filenames", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ filename: data.filename }),
-    });
-    const suggestData = await suggestRes.json();
-    setSuggestions(suggestData.suggestions);
-    setStatus("");
+      const res = await fetch("http://127.0.0.1:8000/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      setFilename(data.filename);
+
+      setStatus("Classifying...");
+      const classifyRes = await fetch("http://127.0.0.1:8000/classify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: data.filename }),
+      });
+      const classifyData = await classifyRes.json();
+      setClassification(classifyData.classification);
+
+      setStatus("Getting suggestions...");
+      const suggestRes = await fetch("http://127.0.0.1:8000/suggest-filenames", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename: data.filename }),
+      });
+      const suggestData = await suggestRes.json();
+      setSuggestions(suggestData.suggestions ?? []); // ✅ fallback to empty array
+
+      setStatus("");
+    } catch (error) {
+      console.error("Upload error:", error);
+      setStatus("Something went wrong.");
+    }
   }
 
   async function handleRename(newName: string) {
-    setStatus("Renaming...");
-    await fetch("https://effective-space-acorn-r4gwr7rq95gw35jww-8000.app.github.dev/rename", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ current_name: filename, new_name: newName }),
-    });
-    setSelected(newName);
-    setStatus("Renamed!");
+    try {
+      setStatus("Renaming...");
+      await fetch("http://127.0.0.1:8000/rename", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ current_name: filename, new_name: newName }),
+      });
+      setSelected(newName);
+      setStatus("Renamed!");
+    } catch (error) {
+      console.error("Rename error:", error);
+      setStatus("Rename failed.");
+    }
   }
 
   return (
@@ -69,9 +78,14 @@ export default function Home() {
           Upload & Classify
         </button>
       </form>
+
       {status && <div>{status}</div>}
-      {classification && <div>Classification: <b>{classification}</b></div>}
-      {suggestions.length > 0 && (
+      {classification && (
+        <div>
+          Classification: <b>{classification}</b>
+        </div>
+      )}
+      {Array.isArray(suggestions) && suggestions.length > 0 && (
         <div>
           <h3 className="font-bold">Suggested Filenames:</h3>
           <ul className="flex flex-col gap-2">
@@ -89,7 +103,11 @@ export default function Home() {
           </ul>
         </div>
       )}
-      {selected && <div className="text-green-700">File renamed to: <b>{selected}</b></div>}
+      {selected && (
+        <div className="text-green-700">
+          File renamed to: <b>{selected}</b>
+        </div>
+      )}
     </main>
   );
 }
