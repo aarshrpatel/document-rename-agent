@@ -104,8 +104,17 @@ export default function Home() {
         </div>
       )}
       {selected && (
-        <div className="text-green-700">
-          File renamed to: <b>{selected}</b>
+        <div className="text-green-700 flex flex-col items-center gap-2">
+          <div>
+            File renamed to: <b>{selected}</b>
+          </div>
+          <a
+            href={`http://127.0.0.1:8000/download/${encodeURIComponent(selected)}`}
+            className="px-3 py-1 bg-blue-700 text-white rounded"
+            download
+          >
+            Download File
+          </a>
         </div>
       )}
     </main>
