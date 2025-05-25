@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -76,3 +76,16 @@ async def rename(req: RenameRequest):
         return {"message": f"File renamed to {req.new_name}"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/download/{filename}")
+def download_file(filename: str):
+    if not UPLOAD_FOLDER:
+        raise HTTPException(status_code=500, detail="UPLOAD_FOLDER environment variable is not set.")
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found.")
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        media_type="application/pdf"
+    )
