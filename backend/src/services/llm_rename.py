@@ -19,8 +19,11 @@ def suggest_filenames(text: str, classification: str, num_suggestions: int = 3) 
         f"Template: {template_info['template']}\n"
         f"Instructions: {template_info['instructions']}\n"
         f"Document Text:\n{text[:4000]}\n\n"
-        f"Based on the above, extract the required fields and generate {num_suggestions} possible file names using the template. "
-        f"Return only a numbered list of file names."
+        f"Based on the above, extract the required fields and generate up to {num_suggestions} possible file names using the template. "
+        f"Return only a numbered list of file names. For example, a return should be in this format:"
+        f"1. 2025_23_22_Aarsh_Patel_Statement.pdf"
+        f"2. 20252322_Aarsh_Patel_Statement.pdf"
+        f"3. 2025/23/22_Aarsh_Patel_Statement.pdf"
     )
 
     response = client.messages.create(
